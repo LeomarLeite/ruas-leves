@@ -25,11 +25,12 @@ class Format(unittest.TestCase):
     def test_write_and_read_back(self):
         streets = [
             (1, "Avenida Um", [(-10.0, -48.0), (-10.001, -48.002)]),
-            (3, "", [(-10.5, -48.5), (-10.4, -48.4), (-10.3, -48.6)]),
+            (3 | gerar.ONEWAY, "", [(-10.5, -48.5), (-10.4, -48.4), (-10.3, -48.6)]),
         ]
         back = ler.read(gerar.pack(streets))
-        self.assertEqual([(k, n) for k, n, _ in back], [(1, "Avenida Um"), (3, "")])
-        for (_, _, wrote), (_, _, got) in zip(streets, back):
+        self.assertEqual([(k, n, one) for k, n, _, one in back],
+                         [(1, "Avenida Um", False), (3, "", True)])
+        for (_, _, wrote), (_, _, got, _) in zip(streets, back):
             for a, b in zip(wrote, got):
                 self.assertAlmostEqual(a[0], b[0], places=5)
                 self.assertAlmostEqual(a[1], b[1], places=5)
@@ -43,6 +44,21 @@ class Format(unittest.TestCase):
         self.assertEqual(gerar.simplify(line, 5), [line[0], line[-1]])
         corner = [(-10.0, -48.0), (-10.01, -48.001), (-10.0, -48.002)]
         self.assertEqual(gerar.simplify(corner, 5), corner)
+
+    def test_junctions_are_never_dropped(self):
+        line = [(-10.0, -48.0), (-10.0, -48.001), (-10.0, -48.002), (-10.0, -48.003)]
+        refs = [1, 2, 3, 4]
+        self.assertEqual(gerar.simplify_keeping(line, refs, set()), [line[0], line[-1]])
+        self.assertEqual(gerar.simplify_keeping(line, refs, {3}), [line[0], line[2], line[-1]])
+        self.assertEqual(gerar.simplify_keeping(line[:2], refs[:2], {1, 2}), line[:2])
+
+    def test_one_way_direction(self):
+        self.assertEqual(gerar.direction({"oneway": "yes"}), 1)
+        self.assertEqual(gerar.direction({"oneway": "-1"}), -1)
+        self.assertEqual(gerar.direction({"junction": "roundabout"}), 1)
+        self.assertEqual(gerar.direction({"junction": "roundabout", "oneway": "no"}), 0)
+        self.assertEqual(gerar.direction({"highway": "motorway"}), 1)
+        self.assertEqual(gerar.direction({"highway": "residential"}), 0)
 
 
 class Boundaries(unittest.TestCase):

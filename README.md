@@ -7,11 +7,11 @@ Um arquivo pequeno de ruas por município do Brasil, para desenhar um mapa simpl
 | Medida (geração de novembro de 2026) | Valor |
 |---|---|
 | Arquivos | 5.570 dos 5.571 municípios (Afuá, no Pará, ficou sem arquivo) |
-| Total | cerca de 109 MB |
-| Mediana por município | cerca de 12 KB |
-| Maior (São Paulo) | cerca de 1,5 MB |
+| Total | cerca de 119 MB |
+| Mediana por município | cerca de 13 KB |
+| Maior (São Paulo) | cerca de 1,6 MB |
 
-Cada arquivo tem só as **ruas de carro e os nomes**: sem prédios, comércios, parques ou rios.
+Cada arquivo tem só as **ruas de carro, os nomes e a mão única**, com os cruzamentos preservados (dá para estimar distâncias pelas ruas): sem prédios, comércios, parques ou rios.
 
 ## Baixar os arquivos prontos
 O pacote com o Brasil inteiro sai na aba **Releases** deste repositório. Os arquivos seguem a licença do OpenStreetMap: veja [DADOS.md](DADOS.md).

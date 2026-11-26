@@ -31,11 +31,11 @@ Compactado com gzip. Números em **varint** (7 bits por byte, os menos significa
 1. Os 4 bytes `FRU1`.
 2. Quantidade de nomes; para cada um, o tamanho em bytes e o texto em UTF-8. O primeiro é o texto vazio.
 3. Quantidade de ruas; para cada uma:
-   - 1 byte de classe: 1 principal, 2 secundária, 3 local;
+   - 1 byte: os 2 bits baixos são a classe (1 principal, 2 secundária, 3 local); o bit de valor 4 marca **mão única**, e então os pontos estão no sentido permitido aos veículos (quem vai a pé pode ignorar);
    - índice do nome (varint);
    - quantidade de pontos (varint);
    - para cada ponto, a diferença de latitude e de longitude, em graus × 100.000, para o ponto anterior **do arquivo** (o primeiro parte de 0, 0).
 
-A precisão é de cerca de 1 m; as linhas são simplificadas com folga de 5 m. Nomes com mais de 80 caracteres são cortados.
+A precisão é de cerca de 1 m; as linhas são simplificadas com folga de 5 m, **menos nos cruzamentos**: ruas que se encontram têm um ponto com a mesma coordenada, e com isso dá para calcular distâncias pelas ruas. O arquivo não traz restrições de conversão: serve para uma noção de distância, não para navegar. Nomes com mais de 80 caracteres são cortados.
 
 Mudança incompatível = novo prefixo (`/v2/`) e nova marca no começo do arquivo.

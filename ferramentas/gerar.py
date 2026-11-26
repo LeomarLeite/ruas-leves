@@ -37,6 +37,7 @@ CLASSES = {
     "tertiary_link": 2, "unclassified": 3, "residential": 3, "living_street": 3, "road": 3,
 }
 SIMPLIFY_METERS = 5
+ONEWAY = 4  # somado à classe: os pontos seguem o sentido permitido aos veículos
 CELL = 0.02  # graus: grade que evita testar o ponto contra todos os municípios
 LICENSE = (
     "Ruas por município (ruas-leves).\n"
@@ -179,6 +180,45 @@ def simplify(points, meters):
     return [points[i] for i in sorted(keep)]
 
 
+def simplify_keeping(points, refs, shared):
+    """Simplifica só entre os cruzamentos: o ponto em que as ruas se encontram nunca sai, para
+    quem usa o arquivo poder seguir de uma rua para outra."""
+    out, start = [], 0
+    for i in range(1, len(points)):
+        if i == len(points) - 1 or refs[i] in shared:
+            part = simplify(points[start:i + 1], SIMPLIFY_METERS)
+            out += part if not out else part[1:]
+            start = i
+    return out
+
+
+def junctions(path) -> set:
+    """Os nós usados mais de uma vez pelas ruas de carro do extrato."""
+    processor = (osmium.FileProcessor(path)
+                 .with_filter(osmium.filter.EntityFilter(osmium.osm.WAY))
+                 .with_filter(osmium.filter.KeyFilter("highway")))
+    seen, shared = set(), set()
+    for way in processor:
+        if way.tags.get("highway") not in CLASSES:
+            continue
+        for node in way.nodes:
+            (shared if node.ref in seen else seen).add(node.ref)
+    return shared
+
+
+def direction(tags) -> int:
+    """1 = mão única no sentido dos pontos; -1 = no sentido contrário; 0 = mão dupla."""
+    value = tags.get("oneway")
+    if value in ("yes", "true", "1"):
+        return 1
+    if value in ("-1", "reverse"):
+        return -1
+    if value is None and (tags.get("junction") in ("roundabout", "circular")
+                          or tags.get("highway") == "motorway"):
+        return 1  # rotatórias e rodovias são de mão única mesmo sem a marca
+    return 0
+
+
 def varint(n, out):
     while True:
         b = n & 0x7F
@@ -193,7 +233,7 @@ def signed(n, out):
 
 
 def pack(streets) -> bytes:
-    """[streets] = lista de (classe, nome, [(lat, lon)])."""
+    """[streets] = lista de (classe, nome, [(lat, lon)]); classe + ONEWAY = mão única."""
     names = {"": 0}
     for _, name, _ in streets:
         names.setdefault(name, len(names))
@@ -231,6 +271,7 @@ def near_seat(point, seats):
 
 
 def read_streets(path, cities, found, orphans):
+    shared = junctions(path)
     processor = (osmium.FileProcessor(path)
                  .with_locations()
                  .with_filter(osmium.filter.EntityFilter(osmium.osm.WAY))
@@ -240,7 +281,8 @@ def read_streets(path, cities, found, orphans):
         cls = CLASSES.get(way.tags.get("highway"))
         if cls is None:
             continue
-        points = [(n.lat, n.lon) for n in way.nodes if n.location.valid()]
+        nodes = [(n.ref, (n.lat, n.lon)) for n in way.nodes if n.location.valid()]
+        points = [p for _, p in nodes]
         if len(points) < 2:
             continue
         middle = points[len(points) // 2]
@@ -249,7 +291,13 @@ def read_streets(path, cities, found, orphans):
             outside += 1
             continue
         name = (way.tags.get("name") or "")[:80]
-        found[code].append((cls, name, simplify(points, SIMPLIFY_METERS)))
+        line = simplify_keeping(points, [r for r, _ in nodes], shared)
+        way_direction = direction(way.tags)
+        if way_direction:
+            cls |= ONEWAY
+            if way_direction < 0:
+                line = line[::-1]
+        found[code].append((cls, name, line))
     return outside
 
 
