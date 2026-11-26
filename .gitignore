@@ -1,0 +1,22 @@
+# Dados, saídas e ambiente: nunca no repositório (os mapas vão nas Releases).
+extratos/
+saida/
+publicacao/
+tabela/
+*.pbf
+*.gpkg
+*.zip
+*.ruas.gz
+
+# Chaves e configuração de quem publica.
+.env
+.env.*
+*.key
+*.pem
+publicar/wrangler.jsonc
+.wrangler/
+
+.venv/
+__pycache__/
+*.pyc
+node_modules/

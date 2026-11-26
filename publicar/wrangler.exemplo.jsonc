@@ -1,0 +1,8 @@
+// Só arquivos estáticos, sem código no servidor. Copie para wrangler.jsonc e troque o domínio.
+{
+  "name": "ruas-leves",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "../publicacao", "not_found_handling": "404-page" },
+  "routes": [{ "pattern": "seu-dominio.exemplo", "custom_domain": true }],
+  "workers_dev": false
+}

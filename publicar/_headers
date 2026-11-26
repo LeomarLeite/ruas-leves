@@ -1,0 +1,6 @@
+/v1/*
+  Access-Control-Allow-Origin: *
+  X-Content-Type-Options: nosniff
+
+/v1/indice.json*
+  Cache-Control: public, max-age=3600
