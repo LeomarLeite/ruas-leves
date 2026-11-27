@@ -31,7 +31,7 @@ Compactado com gzip. Números em **varint** (7 bits por byte, os menos significa
 1. Os 4 bytes `FRU1`.
 2. Quantidade de nomes; para cada um, o tamanho em bytes e o texto em UTF-8. O primeiro é o texto vazio.
 3. Quantidade de ruas; para cada uma:
-   - 1 byte: os 2 bits baixos são a classe (1 principal, 2 secundária, 3 local); o bit de valor 4 marca **mão única**, e então os pontos estão no sentido permitido aos veículos (quem vai a pé pode ignorar);
+   - 1 byte: os 2 bits baixos são a classe (1 principal, 2 secundária, 3 local); o bit de valor 4 marca **mão única**, e então os pontos estão no sentido permitido aos veículos (quem vai a pé pode ignorar); o bit de valor 8 marca **rua sem asfalto** (pela marca de superfície do OpenStreetMap; rua sem a marca conta como pavimentada);
    - índice do nome (varint);
    - quantidade de pontos (varint);
    - para cada ponto, a diferença de latitude e de longitude, em graus × 100.000, para o ponto anterior **do arquivo** (o primeiro parte de 0, 0).

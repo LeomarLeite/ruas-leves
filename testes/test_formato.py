@@ -25,12 +25,12 @@ class Format(unittest.TestCase):
     def test_write_and_read_back(self):
         streets = [
             (1, "Avenida Um", [(-10.0, -48.0), (-10.001, -48.002)]),
-            (3 | gerar.ONEWAY, "", [(-10.5, -48.5), (-10.4, -48.4), (-10.3, -48.6)]),
+            (3 | gerar.ONEWAY | gerar.UNPAVED, "", [(-10.5, -48.5), (-10.4, -48.4), (-10.3, -48.6)]),
         ]
         back = ler.read(gerar.pack(streets))
-        self.assertEqual([(k, n, one) for k, n, _, one in back],
-                         [(1, "Avenida Um", False), (3, "", True)])
-        for (_, _, wrote), (_, _, got, _) in zip(streets, back):
+        self.assertEqual([(s[0], s[1], s[3], s[4]) for s in back],
+                         [(1, "Avenida Um", False, False), (3, "", True, True)])
+        for (_, _, wrote), (_, _, got, _, _) in zip(streets, back):
             for a, b in zip(wrote, got):
                 self.assertAlmostEqual(a[0], b[0], places=5)
                 self.assertAlmostEqual(a[1], b[1], places=5)
@@ -59,6 +59,13 @@ class Format(unittest.TestCase):
         self.assertEqual(gerar.direction({"junction": "roundabout", "oneway": "no"}), 0)
         self.assertEqual(gerar.direction({"highway": "motorway"}), 1)
         self.assertEqual(gerar.direction({"highway": "residential"}), 0)
+
+    def test_unpaved_surface(self):
+        for surface in ("unpaved", "Dirt", "ground", "gravel", "compacted"):
+            self.assertTrue(gerar.unpaved({"surface": surface}), surface)
+        for surface in ("asphalt", "paved", "concrete", "paving_stones", ""):
+            self.assertFalse(gerar.unpaved({"surface": surface}), surface)
+        self.assertFalse(gerar.unpaved({}))
 
 
 class Boundaries(unittest.TestCase):
