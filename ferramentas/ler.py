@@ -12,7 +12,8 @@ import sys
 
 
 def read(data: bytes) -> list:
-    """Devolve [(classe, nome, [(latitude, longitude)], mão única)] de um arquivo .ruas.gz.
+    """Devolve [(classe, nome, [(latitude, longitude)], mão única, sem asfalto)] de um arquivo
+    .ruas.gz.
 
     Na mão única, os pontos seguem o sentido permitido aos veículos.
     """
@@ -51,7 +52,7 @@ def read(data: bytes) -> list:
             lat += signed()
             lng += signed()
             points.append((lat / 1e5, lng / 1e5))
-        streets.append((kind & 3, name, points, bool(kind & 4)))
+        streets.append((kind & 3, name, points, bool(kind & 4), bool(kind & 8)))
     if at != len(raw):
         raise ValueError("sobraram dados no fim do arquivo")
     return streets
@@ -62,8 +63,8 @@ def main() -> None:
         raise SystemExit(__doc__)
     with open(sys.argv[1], "rb") as f:
         streets = read(f.read())
-    names = sorted({name for _, name, _, _ in streets if name})
-    print(f"{len(streets)} ruas, {sum(len(s[2]) for s in streets)} pontos, {len(names)} nomes, {sum(s[3] for s in streets)} de mão única")
+    names = sorted({s[1] for s in streets if s[1]})
+    print(f"{len(streets)} ruas, {sum(len(s[2]) for s in streets)} pontos, {len(names)} nomes, {sum(s[3] for s in streets)} de mão única, {sum(s[4] for s in streets)} sem asfalto")
     for name in names[:10]:
         print(" ", name)
 

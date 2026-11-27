@@ -11,7 +11,7 @@ Um arquivo pequeno de ruas por município do Brasil, para desenhar um mapa simpl
 | Mediana por município | cerca de 13 KB |
 | Maior (São Paulo) | cerca de 1,6 MB |
 
-Cada arquivo tem só as **ruas de carro, os nomes e a mão única**, com os cruzamentos preservados (dá para estimar distâncias pelas ruas): sem prédios, comércios, parques ou rios.
+Cada arquivo tem só as **ruas de carro, os nomes, a mão única e a marca de rua sem asfalto**, com os cruzamentos preservados (dá para estimar distâncias pelas ruas): sem prédios, comércios, parques ou rios.
 
 ## Baixar os arquivos prontos
 O pacote com o Brasil inteiro sai na aba **Releases** deste repositório. Os arquivos seguem a licença do OpenStreetMap: veja [DADOS.md](DADOS.md).

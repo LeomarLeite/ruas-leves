@@ -38,6 +38,11 @@ CLASSES = {
 }
 SIMPLIFY_METERS = 5
 ONEWAY = 4  # somado à classe: os pontos seguem o sentido permitido aos veículos
+UNPAVED = 8  # somado à classe: rua sem asfalto, segundo a marca de superfície do mapa
+UNPAVED_SURFACES = {
+    "unpaved", "dirt", "ground", "earth", "gravel", "fine_gravel", "pebblestone", "compacted",
+    "sand", "mud", "clay", "grass", "rock", "woodchips", "dirt/sand",
+}
 CELL = 0.02  # graus: grade que evita testar o ponto contra todos os municípios
 LICENSE = (
     "Ruas por município (ruas-leves).\n"
@@ -219,6 +224,12 @@ def direction(tags) -> int:
     return 0
 
 
+def unpaved(tags) -> bool:
+    """A rua está marcada como sem asfalto? Sem a marca de superfície, conta como pavimentada."""
+    value = (tags.get("surface") or "").strip().lower()
+    return value.split(":")[0] in UNPAVED_SURFACES
+
+
 def varint(n, out):
     while True:
         b = n & 0x7F
@@ -233,7 +244,8 @@ def signed(n, out):
 
 
 def pack(streets) -> bytes:
-    """[streets] = lista de (classe, nome, [(lat, lon)]); classe + ONEWAY = mão única."""
+    """[streets] = lista de (classe, nome, [(lat, lon)]); classe + ONEWAY = mão única,
+    classe + UNPAVED = sem asfalto."""
     names = {"": 0}
     for _, name, _ in streets:
         names.setdefault(name, len(names))
@@ -292,6 +304,8 @@ def read_streets(path, cities, found, orphans):
             continue
         name = (way.tags.get("name") or "")[:80]
         line = simplify_keeping(points, [r for r, _ in nodes], shared)
+        if unpaved(way.tags):
+            cls |= UNPAVED
         way_direction = direction(way.tags)
         if way_direction:
             cls |= ONEWAY
